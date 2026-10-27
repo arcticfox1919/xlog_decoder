@@ -3,6 +3,8 @@
 Xlog Decoder converts Mars xlog files into readable text logs. It supports
 encrypted logs, ZIP archives, batch processing, and both desktop and command-line use.
 
+中文文档：[README.md](README.md)
+
 ## Run the app
 
 Install Flutter first. The Dart SDK version must satisfy the constraint in

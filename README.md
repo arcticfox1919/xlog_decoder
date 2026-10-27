@@ -2,6 +2,8 @@
 
 将 Mars xlog 日志转换为可阅读的文本文件。支持加密日志、ZIP 压缩包和批量处理，提供桌面界面与命令行两种用法。
 
+English documentation: [README_EN.md](README_EN.md)
+
 ## 启动应用
 
 需要安装 Flutter，Dart 版本须满足 `pubspec.yaml` 中的要求（当前为 3.9.2 或以上、低于 4.0.0）。在项目目录运行：
