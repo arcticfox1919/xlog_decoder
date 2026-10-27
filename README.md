@@ -69,3 +69,16 @@ flutter build windows --release
 ```
 
 构建 macOS 或 Linux 版本时，将 `windows` 换成对应平台名。解码核心位于 `lib/core/xlog/`，桌面功能位于 `lib/features/decoder/`。
+
+macOS 仅构建 arm64 版本，支持 Apple Silicon（M 系列芯片），不支持 Intel Mac。
+分发压缩包内的应用文件名为 `XlogDecoder.app`，界面名称为「Xlog 解码器」。
+
+在 macOS 上一键构建并打包：
+
+```sh
+dart scripts/build_macos.dart
+```
+
+脚本读取 `pubspec.yaml` 的版本号，生成 `build/macos/dist/Xlog-Decoder-1.0.0-macOS-arm64.zip`（文件名随版本号变化）。脚本会自动寻找运行它的 Flutter SDK，也可指定 `FLUTTER_BIN=/path/to/flutter/bin/flutter dart scripts/build_macos.dart`。
+
+测试样本生成脚本位于 `test/fixtures/generators/`，仅在重新生成对照数据时使用；运行应用、构建和日常测试都不需要 Python。

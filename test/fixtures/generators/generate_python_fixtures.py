@@ -84,11 +84,11 @@ def legacy_frame(magic, payload):
 
 
 def main():
+    project = Path(__file__).resolve().parents[3]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mars-root", type=Path,
-                        default=Path(__file__).resolve().parents[3] / "c++/xlog/mars")
+                        default=project.parents[1] / "c++/xlog/mars")
     args = parser.parse_args()
-    project = Path(__file__).resolve().parents[1]
     reference = json.loads((project / "test/fixtures/mars_reference.json").read_text())
     crypt_dir = args.mars_root / "xlog/crypt"
     encrypted, crypt_hash = load_decoder(crypt_dir / "decode_mars_crypt_log_file.py")

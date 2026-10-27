@@ -1,2 +1,5 @@
 #include "../../Flutter/Flutter-Release.xcconfig"
 #include "Warnings.xcconfig"
+
+// Also applies to Profile, which shares this configuration.
+ARCHS = arm64

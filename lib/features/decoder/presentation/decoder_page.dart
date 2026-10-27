@@ -38,7 +38,10 @@ class _DecoderPageState extends State<DecoderPage> {
     super.initState();
     _loadingSettings = widget.preferences != null;
     _privateKey.addListener(_privateKeyChanged);
-    _loadPreferences();
+    // Show the workspace before invoking file-system and Keychain plugins.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadPreferences();
+    });
   }
 
   Future<void> _loadPreferences() async {

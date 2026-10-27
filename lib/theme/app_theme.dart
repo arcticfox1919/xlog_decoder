@@ -102,11 +102,4 @@ BoxDecoration panelDecoration({Color color = AppColors.surface}) =>
       color: color,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: AppColors.border),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x030f172a),
-          blurRadius: 12,
-          offset: Offset(0, 3),
-        ),
-      ],
     );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +10,7 @@ import 'package:xlog_decoder/features/decoder/presentation/decoder_page.dart';
 
 import 'support/fake_log_file_service.dart';
 import 'support/fake_preferences_store.dart';
+import 'package:xlog_decoder/features/decoder/data/decoder_preferences.dart';
 import 'package:xlog_decoder/features/decoder/presentation/widgets/decoder_settings.dart';
 
 class FakeDialogs implements FileDialogService {
@@ -26,7 +29,59 @@ class FakeDialogs implements FileDialogService {
   Future<String?> readPrivateKey() async => '0' * 63 + '1';
 }
 
+class DelayedPreferencesStore extends FakePreferencesStore {
+  final pending = Completer<DecoderPreferences>();
+
+  @override
+  Future<DecoderPreferences> load() => pending.future;
+}
+
 void main() {
+  testWidgets(
+    'Workspace renders while settings load, then restores and enables decoding',
+    (tester) async {
+      final preferences = DelayedPreferencesStore();
+      final service = FakeLogFileService();
+      final controller = DecoderController(service: service);
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        XlogDecoderApp(
+          home: DecoderPage(
+            controller: controller,
+            dialogs: FakeDialogs(),
+            preferences: preferences,
+          ),
+        ),
+      );
+      expect(find.text('Xlog 解码器'), findsOneWidget);
+      expect(find.text('添加日志'), findsOneWidget);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('select-files')))
+            .onPressed,
+        isNull,
+      );
+      expect(
+        tester.widget<DropTarget>(find.byType(DropTarget)).enable,
+        isFalse,
+      );
+      expect(service.requests, isEmpty);
+
+      final key = '0' * 63 + '1';
+      preferences.pending.complete(
+        DecoderPreferences(outputDirectory: 'saved-output', privateKeyHex: key),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('saved-output'), findsOneWidget);
+      expect(tester.widget<DropTarget>(find.byType(DropTarget)).enable, isTrue);
+      await tester.tap(find.byKey(const Key('select-files')));
+      await tester.pumpAndSettle();
+      expect(service.requests.single.outputDirectory, 'saved-output');
+      expect(service.requests.single.privateKeyHex, key);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'Directory row and private key restore after reopening the page',
     (tester) async {

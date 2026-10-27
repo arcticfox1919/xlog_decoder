@@ -122,13 +122,6 @@ class _LogDropZoneState extends State<LogDropZone> {
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: AppColors.border),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x080f172a),
-                              blurRadius: 8,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
                         ),
                         child: widget.busy
                             ? const Padding(

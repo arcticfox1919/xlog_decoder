@@ -1,10 +1,10 @@
 param(
-    [string]$MarsRoot = (Join-Path $PSScriptRoot '../../../c++/xlog/mars'),
+    [string]$MarsRoot = (Join-Path $PSScriptRoot '../../../../../c++/xlog/mars'),
     [string]$Compiler = 'clang'
 )
 
 $ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path $PSScriptRoot -Parent
+$projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
 $marsPath = (Resolve-Path -LiteralPath $MarsRoot).Path
 $zlibPath = Join-Path $marsPath 'comm/windows/zlib'
 $zstdPath = Join-Path $marsPath 'zstd/lib'
