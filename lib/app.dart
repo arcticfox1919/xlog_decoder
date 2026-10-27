@@ -1,37 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'features/decoder/presentation/decoder_page.dart';
+import 'features/decoder/data/decoder_preferences.dart';
+import 'theme/app_theme.dart';
 
 class XlogDecoderApp extends StatelessWidget {
-  const XlogDecoderApp({super.key, this.home});
+  const XlogDecoderApp({super.key, this.home, this.preferences});
 
   final Widget? home;
+  final DecoderPreferencesStore? preferences;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Xlog Decoder',
+    title: 'Xlog 解码器',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff5349d8)),
-      scaffoldBackgroundColor: const Color(0xfff5f6fa),
-      fontFamily: 'Microsoft YaHei',
-      fontFamilyFallback: const [
-        'PingFang SC',
-        'Noto Sans CJK SC',
-        'sans-serif',
-      ],
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: const Color(0xfff7f8fc),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xffe2e5ee)),
-        ),
-      ),
-      dividerTheme: const DividerThemeData(color: Color(0xffeceef5)),
-    ),
-    home: home ?? const DecoderPage(),
+    theme: AppTheme.light,
+    home: home ?? DecoderPage(preferences: preferences),
   );
 }

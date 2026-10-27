@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../theme/app_theme.dart';
+
 class DecoderSettings extends StatefulWidget {
   const DecoderSettings({
     super.key,
@@ -29,63 +31,101 @@ class _DecoderSettingsState extends State<DecoderSettings> {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(24),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
-    ),
+    padding: const EdgeInsets.all(18),
+    decoration: panelDecoration(),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '解码设置',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 24),
-        const Text('输出目录', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xfff5f6fa),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.folder_outlined,
-                size: 19,
-                color: Color(0xff72798e),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  widget.outputDirectory ?? '原文件所在目录',
-                  style: const TextStyle(fontSize: 13, height: 1.5),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Row(
+        const Row(
           children: [
-            TextButton(
-              key: const Key('choose-output-directory'),
-              onPressed: widget.busy ? null : widget.onSelectDirectory,
-              child: const Text('选择目录'),
+            Icon(Icons.tune_rounded, size: 16, color: AppColors.muted),
+            SizedBox(width: 7),
+            Text(
+              '解码设置',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
-            if (widget.outputDirectory != null)
-              TextButton(
-                onPressed: widget.busy ? null : widget.onResetDirectory,
-                child: const Text('恢复默认'),
-              ),
+            Spacer(),
+            Text(
+              '自动保存',
+              style: TextStyle(fontSize: 11, color: AppColors.faint),
+            ),
           ],
         ),
-        const Divider(height: 24),
-        const Text('解密私钥（可选）', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 10),
+        const SizedBox(height: 24),
+        const Text(
+          '输出目录',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 9),
+        Tooltip(
+          message: widget.outputDirectory ?? '点击选择输出目录',
+          child: Material(
+            color: AppColors.subtle,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(9),
+              side: const BorderSide(color: AppColors.border),
+            ),
+            child: InkWell(
+              key: const Key('choose-output-directory'),
+              borderRadius: BorderRadius.circular(9),
+              onTap: widget.busy ? null : widget.onSelectDirectory,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 13,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.folder_outlined,
+                      size: 17,
+                      color: AppColors.muted,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        widget.outputDirectory ?? '原文件所在目录',
+                        style: const TextStyle(fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.unfold_more_rounded,
+                      size: 16,
+                      color: AppColors.faint,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (widget.outputDirectory != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: widget.busy ? null : widget.onResetDirectory,
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              child: const Text('恢复默认'),
+            ),
+          ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Divider(height: 1),
+        ),
+        const Row(
+          children: [
+            Text(
+              '解密私钥',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(width: 6),
+            Text('可选', style: TextStyle(fontSize: 11, color: AppColors.faint)),
+          ],
+        ),
+        const SizedBox(height: 9),
         TextField(
           key: const Key('private-key'),
           controller: widget.privateKeyController,
@@ -93,33 +133,59 @@ class _DecoderSettingsState extends State<DecoderSettings> {
           obscureText: !_showKey,
           autocorrect: false,
           enableSuggestions: false,
+          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
           decoration: InputDecoration(
             hintText: '64 位十六进制私钥',
-            hintStyle: const TextStyle(fontSize: 13),
             errorText: widget.error,
             errorMaxLines: 3,
             suffixIcon: IconButton(
               tooltip: _showKey ? '隐藏私钥' : '显示私钥',
-              onPressed: () => setState(() => _showKey = !_showKey),
+              onPressed: widget.busy
+                  ? null
+                  : () => setState(() => _showKey = !_showKey),
               icon: Icon(
                 _showKey
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
-                size: 19,
+                size: 17,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 5),
         TextButton.icon(
           onPressed: widget.busy ? null : widget.onImportKey,
-          icon: const Icon(Icons.key_rounded, size: 17),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            visualDensity: VisualDensity.compact,
+          ),
+          icon: const Icon(Icons.file_open_outlined, size: 14),
           label: const Text('从文件导入私钥'),
         ),
-        const SizedBox(height: 10),
-        const Text(
-          '未加密的日志无需填写。私钥仅用于本次会话，不保存到磁盘。',
-          style: TextStyle(fontSize: 12, color: Color(0xff858b9b), height: 1.7),
+        const SizedBox(height: 12),
+        const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Icon(
+                Icons.lock_outline_rounded,
+                size: 12,
+                color: AppColors.faint,
+              ),
+            ),
+            SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                '未加密日志可留空。私钥加密保存在本机，清空输入即可删除。',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.muted,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     ),

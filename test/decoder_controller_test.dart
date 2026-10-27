@@ -69,7 +69,7 @@ void main() {
           return DecodeBatchResult([
             const DecodedFile(
               sourceName: 'good.xlog',
-              outputPath: 'good.txt.log',
+              outputPath: 'good.log',
               issues: ['gap'],
             ),
             const DecodedFile(sourceName: 'bad.xlog', error: 'no content'),

@@ -4,7 +4,7 @@ import 'package:xlog_decoder/features/decoder/domain/decode_models.dart';
 DecodeBatchResult successfulBatch() => DecodeBatchResult([
   const DecodedFile(
     sourceName: 'a.xlog',
-    outputPath: 'a.txt.log',
+    outputPath: 'a.log',
     byteCount: 100,
     blockCount: 1,
   ),

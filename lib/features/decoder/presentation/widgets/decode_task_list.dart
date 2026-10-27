@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
 import '../../domain/decode_models.dart';
+import '../../../../theme/app_theme.dart';
 
 class DecodeTaskList extends StatelessWidget {
   const DecodeTaskList({
@@ -24,19 +25,20 @@ class DecodeTaskList extends StatelessWidget {
         children: [
           const Text(
             '处理记录',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           if (tasks.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
                 '${tasks.length} 个任务',
-                style: const TextStyle(fontSize: 13, color: Color(0xff818799)),
+                style: const TextStyle(fontSize: 13, color: AppColors.muted),
               ),
             ),
           const Spacer(),
           TextButton(
             onPressed: busy || tasks.isEmpty ? null : onClear,
+            style: TextButton.styleFrom(foregroundColor: AppColors.muted),
             child: const Text('清空记录'),
           ),
         ],
@@ -45,24 +47,25 @@ class DecodeTaskList extends StatelessWidget {
       if (tasks.isEmpty)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(34),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+          decoration: panelDecoration(),
           child: const Column(
             children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                size: 30,
-                color: Color(0xffb1b7c8),
-              ),
+              Icon(Icons.inbox_outlined, size: 28, color: AppColors.faint),
               SizedBox(height: 12),
-              Text('还没有处理记录', style: TextStyle(color: Color(0xff787f92))),
+              Text(
+                '还没有处理记录',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.muted,
+                ),
+              ),
               SizedBox(height: 6),
               Text(
-                '生成的可读日志以 .txt.log 结尾',
-                style: TextStyle(fontSize: 12, color: Color(0xffa0a6b6)),
+                '生成 .log 日志，ZIP 结果保存到独立文件夹',
+                style: TextStyle(fontSize: 11, color: AppColors.faint),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -88,62 +91,87 @@ class _TaskCard extends StatelessWidget {
     final (label, color, icon) = switch (task.status) {
       DecodeTaskStatus.queued => (
         '等待中',
-        const Color(0xff8b90a1),
+        AppColors.faint,
         Icons.schedule_rounded,
       ),
-      DecodeTaskStatus.running => (
-        '处理中',
-        const Color(0xff5349d8),
-        Icons.sync_rounded,
-      ),
+      DecodeTaskStatus.running => ('处理中', AppColors.accent, Icons.sync_rounded),
       DecodeTaskStatus.success => (
         '已完成',
-        const Color(0xff16856a),
+        AppColors.accent,
         Icons.check_circle_outline_rounded,
       ),
       DecodeTaskStatus.warning => (
         '部分恢复',
-        const Color(0xffb77912),
+        AppColors.warning,
         Icons.warning_amber_rounded,
       ),
       DecodeTaskStatus.failure => (
         '未完成',
-        const Color(0xffc34f54),
+        AppColors.danger,
         Icons.error_outline_rounded,
       ),
     };
     final result = task.result;
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      decoration: panelDecoration(),
+      clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         shape: const Border(),
         collapsedShape: const Border(),
         initiallyExpanded:
             task.status == DecodeTaskStatus.failure ||
             task.status == DecodeTaskStatus.warning,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 7),
-        leading: Icon(
-          p.extension(task.inputPath).toLowerCase() == '.zip'
-              ? Icons.folder_zip_outlined
-              : Icons.description_outlined,
-          color: color,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        leading: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Icon(
+            p.extension(task.inputPath).toLowerCase() == '.zip'
+                ? Icons.folder_zip_outlined
+                : Icons.description_outlined,
+            size: 19,
+            color: color,
+          ),
         ),
         title: Row(
           children: [
             Expanded(
               child: Text(
                 p.basename(task.inputPath),
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 12),
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 5),
-            Text(label, style: TextStyle(fontSize: 12, color: color)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 13, color: color),
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
         subtitle: Padding(
@@ -154,12 +182,12 @@ class _TaskCard extends StatelessWidget {
                 : '已生成 ${result.successCount} 个日志'
                       '${result.failureCount > 0 ? ' · ${result.failureCount} 个失败' : ''}'
                       '${result.skippedEntries > 0 ? ' · 跳过 ${result.skippedEntries} 个非日志条目' : ''}',
-            style: const TextStyle(fontSize: 12, color: Color(0xff818799)),
+            style: const TextStyle(fontSize: 12, color: AppColors.muted),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        childrenPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
         children: [
           const Divider(),
           if (task.error != null)
@@ -167,7 +195,7 @@ class _TaskCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: SelectableText(
                 task.error!,
-                style: const TextStyle(color: Color(0xffc34f54), height: 1.6),
+                style: const TextStyle(color: AppColors.danger, height: 1.6),
               ),
             ),
           for (final file in result?.files ?? <DecodedFile>[])
@@ -201,7 +229,7 @@ class _OutputFile extends StatelessWidget {
                   file.outputPath!,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xff16856a),
+                    color: AppColors.accent,
                     height: 1.6,
                   ),
                 ),
@@ -225,14 +253,14 @@ class _OutputFile extends StatelessWidget {
         if (file.succeeded)
           Text(
             '${file.blockCount} 个日志块 · ${_size(file.byteCount)}',
-            style: const TextStyle(fontSize: 12, color: Color(0xff8b90a1)),
+            style: const TextStyle(fontSize: 12, color: AppColors.faint),
           ),
         if (file.error != null)
           SelectableText(
             file.error!,
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xffc34f54),
+              color: AppColors.danger,
               height: 1.7,
             ),
           ),
@@ -243,7 +271,7 @@ class _OutputFile extends StatelessWidget {
               '恢复提示（${file.issues.length}）\n${file.issues.join('\n')}',
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xffb77912),
+                color: AppColors.warning,
                 height: 1.6,
               ),
             ),

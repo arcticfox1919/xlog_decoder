@@ -46,6 +46,7 @@ Future<DecodeBatchResult> _decodeInput(DecodeRequest request) async {
 
   final stream = InputFileStream(input.path);
   final results = <DecodedFile>[];
+  Directory? zipOutput;
   var skipped = 0;
   try {
     final archive = ZipDecoder().decodeStream(stream);
@@ -74,7 +75,8 @@ Future<DecodeBatchResult> _decodeInput(DecodeRequest request) async {
         if (entry.crc32 != null && getCrc32(bytes) != entry.crc32) {
           throw const FormatException('ZIP 文件校验失败，日志可能已损坏。');
         }
-        results.add(await _decodeLog(entry.name, bytes, directory, decoder));
+        zipOutput ??= await _reserveZipDirectory(directory, input.path);
+        results.add(await _decodeLog(entry.name, bytes, zipOutput, decoder));
       } on Exception catch (error) {
         results.add(
           DecodedFile(sourceName: entry.name, error: _message(error)),
@@ -125,14 +127,35 @@ Future<DecodedFile> _decodeLog(
   }
 }
 
-Future<File> _reserveOutput(Directory directory, String sourceName) async {
+String _outputStem(String sourceName) {
   final basename = p.posix.basename(sourceName.replaceAll('\\', '/'));
   final stem = p
       .basenameWithoutExtension(basename)
       .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+  return stem.isEmpty || stem == '.' || stem == '..' ? 'logs' : stem;
+}
+
+Future<Directory> _reserveZipDirectory(
+  Directory parent,
+  String sourceName,
+) async {
+  final stem = _outputStem(sourceName);
   for (var index = 0; ; index++) {
-    final suffix = index == 0 ? '' : ' ($index)';
-    final file = File(p.join(directory.absolute.path, '$stem$suffix.txt.log'));
+    final suffix = index == 0 ? '' : '$index';
+    final directory = Directory(p.join(parent.absolute.path, '$stem$suffix'));
+    if (await FileSystemEntity.type(directory.path, followLinks: false) !=
+        FileSystemEntityType.notFound) {
+      continue;
+    }
+    return directory.create();
+  }
+}
+
+Future<File> _reserveOutput(Directory directory, String sourceName) async {
+  final stem = _outputStem(sourceName);
+  for (var index = 0; ; index++) {
+    final suffix = index == 0 ? '' : '$index';
+    final file = File(p.join(directory.absolute.path, '$stem$suffix.log'));
     try {
       return await file.create(exclusive: true);
     } on FileSystemException {

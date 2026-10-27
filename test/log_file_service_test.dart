@@ -23,14 +23,14 @@ void main() {
       File(p.join(sandbox.path, name))..writeAsBytesSync(bytes);
 
   test(
-    'Single file writes .txt.log beside the source without changing it',
+    'Single file writes .log beside the source without changing it',
     () async {
       final source = await input('sample.xlog', modern('09'));
       final result = await service.decode(
         DecodeRequest(inputPath: source.path),
       );
       final output = result.files.single;
-      expect(output.outputPath, p.join(sandbox.path, 'sample.txt.log'));
+      expect(output.outputPath, p.join(sandbox.path, 'sample.log'));
       expect(await File(output.outputPath!).readAsBytes(), expected);
       expect(await source.readAsBytes(), modern('09'));
     },
@@ -51,7 +51,7 @@ void main() {
         );
         expect(result.successCount, 1);
         expect(
-          await File(p.join(directory, 'encrypted.txt.log')).readAsBytes(),
+          await File(p.join(directory, 'encrypted.log')).readAsBytes(),
           expected,
         );
       },
@@ -62,20 +62,19 @@ void main() {
     'Existing output is preserved and the new output gets a number',
     () async {
       final source = await input('app.xlog', modern('09'));
-      final existing = await input('app.txt.log', [65]);
+      final existing = await input('app.log', [65]);
+      final existingNumbered = await input('app1.log', [66]);
       final result = await service.decode(
         DecodeRequest(inputPath: source.path),
       );
-      expect(
-        result.files.single.outputPath,
-        p.join(sandbox.path, 'app (1).txt.log'),
-      );
+      expect(result.files.single.outputPath, p.join(sandbox.path, 'app2.log'));
       expect(await existing.readAsBytes(), [65]);
+      expect(await existingNumbered.readAsBytes(), [66]);
     },
   );
 
   test(
-    'ZIP decodes nested logs beside the ZIP, flattens names, and avoids traversal',
+    'ZIP groups decoded logs in a named folder, flattens names, and avoids traversal',
     () async {
       final archive = Archive()
         ..add(ArchiveFile.bytes('one/app.xlog', modern('09')))
@@ -90,12 +89,12 @@ void main() {
       expect(result.successCount, 3);
       expect(result.skippedEntries, 2);
       expect(result.files.map((file) => p.basename(file.outputPath!)), [
-        'app.txt.log',
-        'app (1).txt.log',
-        'outside.txt.log',
+        'app.log',
+        'app1.log',
+        'outside.log',
       ]);
       for (final file in result.files) {
-        expect(p.dirname(file.outputPath!), sandbox.path);
+        expect(p.dirname(file.outputPath!), p.join(sandbox.path, 'logs'));
         expect(await File(file.outputPath!).readAsBytes(), expected);
       }
       expect(await Directory(p.join(sandbox.path, 'one')).exists(), isFalse);
@@ -120,12 +119,76 @@ void main() {
       expect(result.failureCount, 1);
       expect(result.files.first.error, isNotNull);
       expect(
-        await File(p.join(directory, 'good.txt.log')).readAsBytes(),
+        await File(p.join(directory, 'mixed', 'good.log')).readAsBytes(),
         expected,
       );
-      expect(await File(p.join(directory, 'bad.txt.log')).exists(), isFalse);
+      expect(
+        await File(p.join(directory, 'mixed', 'bad.log')).exists(),
+        isFalse,
+      );
     },
   );
+
+  test(
+    'Repeated ZIP decoding creates a new folder and preserves prior output',
+    () async {
+      final source = await input(
+        'logs.zip',
+        ZipEncoder().encodeBytes(
+          Archive()..add(ArchiveFile.bytes('app.xlog', modern('09'))),
+        ),
+      );
+      final first = await service.decode(DecodeRequest(inputPath: source.path));
+      final second = await service.decode(
+        DecodeRequest(inputPath: source.path),
+      );
+      final third = await service.decode(DecodeRequest(inputPath: source.path));
+      expect(
+        third.files.single.outputPath,
+        p.join(sandbox.path, 'logs2', 'app.log'),
+      );
+      expect(
+        first.files.single.outputPath,
+        p.join(sandbox.path, 'logs', 'app.log'),
+      );
+      expect(
+        second.files.single.outputPath,
+        p.join(sandbox.path, 'logs1', 'app.log'),
+      );
+      expect(
+        await File(first.files.single.outputPath!).readAsBytes(),
+        expected,
+      );
+      expect(
+        await File(second.files.single.outputPath!).readAsBytes(),
+        expected,
+      );
+    },
+  );
+
+  test('ZIP folder naming skips existing files too', () async {
+    final existing = await input('logs', [65]);
+    final source = await input(
+      'logs.zip',
+      ZipEncoder().encodeBytes(
+        Archive()..add(ArchiveFile.bytes('app.xlog', modern('09'))),
+      ),
+    );
+    final result = await service.decode(DecodeRequest(inputPath: source.path));
+    expect(
+      result.files.single.outputPath,
+      p.join(sandbox.path, 'logs1', 'app.log'),
+    );
+    expect(await existing.readAsBytes(), [65]);
+  });
+
+  test('A .log input is preserved and decoded to a numbered .log', () async {
+    final source = await input('app.log', modern('09'));
+    final result = await service.decode(DecodeRequest(inputPath: source.path));
+    expect(result.files.single.outputPath, p.join(sandbox.path, 'app1.log'));
+    expect(await source.readAsBytes(), modern('09'));
+    expect(await File(result.files.single.outputPath!).readAsBytes(), expected);
+  });
 
   test('Missing key or invalid input produces no empty output', () async {
     for (final bytes in [
@@ -138,7 +201,7 @@ void main() {
       );
       expect(result.failureCount, 1);
       expect(result.files.single.error, isNotNull);
-      expect(await File(p.join(sandbox.path, 'bad.txt.log')).exists(), isFalse);
+      expect(await File(p.join(sandbox.path, 'bad.log')).exists(), isFalse);
     }
   });
 

@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 import 'app.dart';
+import 'features/decoder/data/native_preferences.dart';
 
 void main() {
-  runApp(const XlogDecoderApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(XlogDecoderApp(preferences: createPreferencesStore()));
 }

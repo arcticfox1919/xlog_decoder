@@ -63,7 +63,7 @@ Future<void> main(List<String> arguments) async {
               ? args.rest[1]
               : p.join(
                   p.dirname(file.path),
-                  '${p.basenameWithoutExtension(file.path)}.txt.log',
+                  '${p.basenameWithoutExtension(file.path)}.log',
                 ),
         );
         if (await output.exists() &&
