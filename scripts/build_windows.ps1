@@ -13,7 +13,9 @@ try {
     }
     $version = $match.Groups[1].Value
     $flutter = if ($env:FLUTTER_BIN) { $env:FLUTTER_BIN } else { 'flutter' }
-    & $flutter build windows --release --target-platform windows-x64 --build-name $version --build-number 1
+    # Flutter 3.35 selects the Windows target from the host architecture.
+    # The workflow uses an x64 runner; --target-platform is not supported.
+    & $flutter build windows --release --build-name $version --build-number 1
     if ($LASTEXITCODE -ne 0) { throw "Flutter build failed: $LASTEXITCODE" }
 
     $release = Join-Path $project 'build/windows/x64/runner/Release'
