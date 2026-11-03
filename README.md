@@ -1,8 +1,8 @@
 # Xlog 解码器
 
-将 Mars xlog 日志转换为可阅读的文本文件。支持加密日志、ZIP 压缩包和批量处理，提供桌面界面与命令行两种用法。
+**简体中文** | [English](README_EN.md)
 
-English documentation: [README_EN.md](README_EN.md)
+将 Mars xlog 日志转换为可阅读的文本文件。支持加密日志、ZIP 压缩包和批量处理，提供桌面界面与命令行两种用法。
 
 ## 下载使用
 

@@ -1,9 +1,9 @@
 # Xlog Decoder
 
+[简体中文](README.md) | **English**
+
 Xlog Decoder converts Mars xlog files into readable text logs. It supports
 encrypted logs, ZIP archives, batch processing, and both desktop and command-line use.
-
-中文文档：[README.md](README.md)
 
 ## Downloads
 
