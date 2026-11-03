@@ -96,7 +96,7 @@ dart scripts/build_macos.dart
 
 ### GitHub Actions 自动构建
 
-[desktop.yml](.github/workflows/desktop.yml) 固定使用 Flutter 3.35.7，先运行静态分析和全部测试，再分别构建 Windows x64 和 macOS arm64。推送到 `main`、向 `main` 提交 PR 或在 Actions 中手动运行都会生成下载产物。Windows 本地也可用 PowerShell 执行 `./scripts/build_windows.ps1`，产物位于 `build/windows/dist/`。
+[desktop.yml](.github/workflows/desktop.yml) 固定使用 Flutter 3.35.7，先运行静态分析和全部测试，再分别构建 Windows x64 和 macOS arm64。仅推送 `v*` 标签或在 Actions 中手动运行时生成下载产物；普通分支推送和 PR 不触发构建。手动运行仅生成 Actions 产物，推送版本标签才会自动发布 Release。Windows 本地也可用 PowerShell 执行 `./scripts/build_windows.ps1`，产物位于 `build/windows/dist/`。
 
 发布正式版本时，先更新 `pubspec.yaml` 的版本号并提交，再推送匹配的标签，例如：
 

@@ -127,7 +127,7 @@ the application.
 
 ### GitHub Actions builds
 
-[desktop.yml](.github/workflows/desktop.yml) pins Flutter 3.35.7, runs analysis and all tests, then builds Windows x64 and macOS arm64. Pushes to `main`, PRs targeting `main`, and manual runs generate downloadable artifacts. To package Windows locally, run `./scripts/build_windows.ps1` in PowerShell; output is saved to `build/windows/dist/`.
+[desktop.yml](.github/workflows/desktop.yml) pins Flutter 3.35.7, runs analysis and all tests, then builds Windows x64 and macOS arm64. Only pushes of `v*` tags and manual runs generate downloadable artifacts; branch pushes and PRs do not trigger builds. Manual runs only produce Actions artifacts; version tag pushes also publish a GitHub Release. To package Windows locally, run `./scripts/build_windows.ps1` in PowerShell; output is saved to `build/windows/dist/`.
 
 To publish a release, update and commit the version in `pubspec.yaml`, then push a matching tag:
 
