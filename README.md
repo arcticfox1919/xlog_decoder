@@ -4,6 +4,15 @@
 
 English documentation: [README_EN.md](README_EN.md)
 
+## 下载使用
+
+从 [GitHub Releases](https://github.com/arcticfox1919/xlog_decoder/releases) 下载对应平台的 ZIP，无需安装 Flutter：
+
+- **Windows x64**：解压后运行 `XlogDecoder/xlog_decoder.exe`。请保留同目录下的 DLL 和 `data` 文件夹，压缩包已包含 Visual C++ 运行库。
+- **macOS arm64**：适用于 Apple Silicon（M 系列芯片），解压后将 `XlogDecoder.app` 拖到「应用程序」目录。当前为临时签名，未经过 Apple 公证；首次打开若被系统阻止，可在「系统设置 → 隐私与安全性」中允许打开。
+
+开发版本可在仓库 **Actions → Desktop builds → 成功的运行 → Artifacts** 下载（需要登录 GitHub，保存 30 天）。下载的 Artifact 解压后，里面是对应平台的发布 ZIP。
+
 ## 启动应用
 
 需要安装 Flutter，Dart 版本须满足 `pubspec.yaml` 中的要求（当前为 3.9.2 或以上、低于 4.0.0）。在项目目录运行：
@@ -84,3 +93,16 @@ dart scripts/build_macos.dart
 脚本读取 `pubspec.yaml` 的版本号，生成 `build/macos/dist/Xlog-Decoder-1.0.0-macOS-arm64.zip`（文件名随版本号变化）。脚本会自动寻找运行它的 Flutter SDK，也可指定 `FLUTTER_BIN=/path/to/flutter/bin/flutter dart scripts/build_macos.dart`。
 
 测试样本生成脚本位于 `test/fixtures/generators/`，仅在重新生成对照数据时使用；运行应用、构建和日常测试都不需要 Python。
+
+### GitHub Actions 自动构建
+
+[desktop.yml](.github/workflows/desktop.yml) 固定使用 Flutter 3.35.7，先运行静态分析和全部测试，再分别构建 Windows x64 和 macOS arm64。推送到 `main`、向 `main` 提交 PR 或在 Actions 中手动运行都会生成下载产物。Windows 本地也可用 PowerShell 执行 `./scripts/build_windows.ps1`，产物位于 `build/windows/dist/`。
+
+发布正式版本时，先更新 `pubspec.yaml` 的版本号并提交，再推送匹配的标签，例如：
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+标签必须与 `pubspec.yaml` 一致。两个平台均构建成功后，工作流自动创建 GitHub Release 并上传 ZIP；发布说明使用英文，包含下载与签名说明，以及对应源代码提交的链接。带预发布后缀的标签（例如 `v1.0.1-beta.1`）会创建预发布版本。使用仓库自带的 `GITHUB_TOKEN`，无需配置额外 Secret；仓库需允许 GitHub Actions 运行和工作流申请 `contents: write` 权限。当前不包含 Windows 代码签名或 Apple Developer ID 签名与公证。

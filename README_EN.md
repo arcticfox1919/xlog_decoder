@@ -5,6 +5,15 @@ encrypted logs, ZIP archives, batch processing, and both desktop and command-lin
 
 中文文档：[README.md](README.md)
 
+## Downloads
+
+Download the ZIP for your platform from [GitHub Releases](https://github.com/arcticfox1919/xlog_decoder/releases). Flutter is not required:
+
+- **Windows x64:** Extract and run `XlogDecoder/xlog_decoder.exe`. Keep the DLLs and `data` directory beside it; the Visual C++ runtime is included.
+- **macOS arm64:** For Apple Silicon (M-series Macs). Extract and move `XlogDecoder.app` to Applications. The app is ad-hoc signed and not notarized by Apple; if blocked on first launch, allow it in System Settings → Privacy & Security.
+
+Development builds are available under **Actions → Desktop builds → a successful run → Artifacts** (GitHub login required, retained for 30 days). Extract the downloaded artifact to find the platform ZIP.
+
 ## Run the app
 
 Install Flutter first. The Dart SDK version must satisfy the constraint in
@@ -115,3 +124,16 @@ FLUTTER_BIN=/path/to/flutter/bin/flutter dart scripts/build_macos.dart
 The fixture-generation scripts in `test/fixtures/generators/` are only needed
 when regenerating reference data. Python is not required to run, build, or test
 the application.
+
+### GitHub Actions builds
+
+[desktop.yml](.github/workflows/desktop.yml) pins Flutter 3.35.7, runs analysis and all tests, then builds Windows x64 and macOS arm64. Pushes to `main`, PRs targeting `main`, and manual runs generate downloadable artifacts. To package Windows locally, run `./scripts/build_windows.ps1` in PowerShell; output is saved to `build/windows/dist/`.
+
+To publish a release, update and commit the version in `pubspec.yaml`, then push a matching tag:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The tag must match `pubspec.yaml`. Once both builds succeed, the workflow creates a GitHub Release and uploads the ZIPs. Release notes are in English, with download and signing instructions and a link to the source commit. Tags with a prerelease suffix (such as `v1.0.1-beta.1`) create prereleases. It uses the built-in `GITHUB_TOKEN`; no additional secrets are required. The repository must allow Actions and workflows requesting `contents: write`. Windows code signing and Apple Developer ID signing/notarization are not configured.

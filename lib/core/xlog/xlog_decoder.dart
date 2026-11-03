@@ -92,9 +92,13 @@ class XlogDecoder {
       }
 
       final seq = header.sequence;
+      // Some producers skip sequence 2 after initialization, including after
+      // restarting and appending to the same file. Accept that startup gap.
+      final startupGap = lastSequence == 1 && seq == 3;
       if (seq != 0 &&
           seq != 1 &&
           lastSequence != 0 &&
+          !startupGap &&
           seq != lastSequence + 1) {
         report(
           XlogIssueKind.sequence,

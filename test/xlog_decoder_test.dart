@@ -98,11 +98,47 @@ void main() {
         ...frame(8, [], sequence: 0),
         ...frame(8, [66], sequence: 1),
         ...frame(8, [67], sequence: 3),
+        ...frame(8, [68], sequence: 5),
       ]),
     );
-    expect(result.bytes, [65, 66, 67]);
+    expect(result.bytes, [65, 66, 67, 68]);
     expect(result.issues.single.kind, XlogIssueKind.sequence);
+    expect(result.issues.single.message, 'Expected sequence 4, found 5');
     expect(decoder.decode(frame(8, [65], sequence: 40)).issues, isEmpty);
+  });
+
+  test('Accepts startup sequence 1 to 3 across process restarts', () {
+    final result = XlogDecoder(strict: true).decode(
+      Uint8List.fromList([
+        for (var i = 0; i < 3; i++) ...[
+          ...frame(8, [65], sequence: 1),
+          ...frame(8, [], sequence: 0),
+          ...frame(8, [66], sequence: 3),
+          ...frame(8, [67], sequence: 4),
+        ],
+      ]),
+    );
+    expect(result.bytes, [65, 66, 67, 65, 66, 67, 65, 66, 67]);
+    expect(result.blocks, hasLength(12));
+    expect(result.issues, isEmpty);
+  });
+
+  test('Other startup sequence gaps still fail in strict mode', () {
+    expect(
+      () => XlogDecoder(strict: true).decode(
+        Uint8List.fromList([
+          ...frame(8, [65], sequence: 1),
+          ...frame(8, [66], sequence: 4),
+        ]),
+      ),
+      throwsA(
+        isA<XlogDecodeException>().having(
+          (error) => error.issue.kind,
+          'kind',
+          XlogIssueKind.sequence,
+        ),
+      ),
+    );
   });
 
   test('Trailing mmap padding and zero-length records', () {

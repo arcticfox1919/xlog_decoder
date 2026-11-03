@@ -1,0 +1,138 @@
+name: Desktop builds
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Verify release tag matches pubspec.yaml
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: python
+        run: |
+          import os
+          import pathlib
+          import re
+          version = re.search(r'^version:\s*(\S+)', pathlib.Path('pubspec.yaml').read_text(), re.M).group(1).strip("\"'")
+          tag = os.environ['GITHUB_REF_NAME']
+          if tag != f'v{version}':
+              raise SystemExit(f'Tag {tag} must match pubspec.yaml version: v{version}')
+      - run: flutter analyze
+      - run: flutter test
+
+  build:
+    needs: checks
+    name: Build ${{ matrix.platform }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows-x64
+            runner: windows-2022
+            archive: build/windows/dist/*.zip
+          - platform: macOS-arm64
+            runner: macos-14
+            archive: build/macos/dist/*.zip
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Build and package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/build_windows.ps1
+      - name: Build and package macOS
+        if: runner.os == 'macOS'
+        run: dart scripts/build_macos.dart
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Xlog-Decoder-${{ matrix.platform }}
+          path: ${{ matrix.archive }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  release:
+    name: Publish release downloads
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: Xlog-Decoder-*
+          merge-multiple: true
+          path: dist
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(dist/*.zip)
+          if [ "${#archives[@]}" -ne 2 ]; then
+            echo 'Expected both Windows and macOS ZIP archives.' >&2
+            exit 1
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## Downloads
+
+          - **Windows x64:** Download `Xlog-Decoder-*-Windows-x64.zip`, extract it, and run `XlogDecoder/xlog_decoder.exe`. Keep all DLLs and the `data` directory beside the executable. The Visual C++ runtime is included.
+          - **macOS Apple Silicon (arm64):** Download `Xlog-Decoder-*-macOS-arm64.zip`, extract it, and move `XlogDecoder.app` to Applications. Intel Macs are not supported.
+
+          Flutter is not required to use these builds. Download the platform ZIP under **Assets**, rather than the source code archives.
+
+          ## Signing
+
+          The Windows build is not code signed. The macOS build is ad-hoc signed and has not been notarized by Apple. If macOS blocks the first launch, allow the app in **System Settings → Privacy & Security**.
+          NOTES
+          printf '\nSource commit: [%s](https://github.com/%s/commit/%s).\n' "$GITHUB_SHA" "$GH_REPO" "$GITHUB_SHA" >> release-notes.md
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${archives[@]}" --clobber
+          else
+            options=(--verify-tag --notes-file release-notes.md --title "$RELEASE_TAG")
+            if [[ "$RELEASE_TAG" == *-* ]]; then
+              options+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" "${archives[@]}" "${options[@]}"
+          fi
