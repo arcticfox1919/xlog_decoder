@@ -592,7 +592,7 @@ packages:
       path: "packages/xlog_decode"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "1.0.0"
   xml:
     dependency: transitive
     description:
