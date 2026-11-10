@@ -33,6 +33,45 @@ void main() {
   });
   tearDown(() => project.delete(recursive: true));
 
+  Future<Directory> crt(String relative, {bool complete = true}) async {
+    final directory = await Directory(
+      p.join(project.path, 'redist', relative),
+    ).create(recursive: true);
+    if (complete) {
+      for (final dll in cppRuntimeFiles) {
+        await File(p.join(directory.path, dll)).writeAsString(dll);
+      }
+    }
+    return directory;
+  }
+
+  test(
+    'Selects the latest desktop CRT and ignores OneCore and other architectures',
+    () async {
+      await crt('14.9.999/x64/Microsoft.VC143.CRT');
+      final expected = await crt('14.44.35208/x64/Microsoft.VC143.CRT');
+      await crt('14.50.1/onecore/x64/Microsoft.VC143.CRT');
+      await crt('14.50.1/x86/Microsoft.VC143.CRT');
+      await crt('14.50.1/arm64/Microsoft.VC143.CRT');
+      await crt('14.50.1/debug_nonredist/x64/Microsoft.VC143.CRT');
+      await crt('14.50.1/x64/Microsoft.VC143.CRT', complete: false);
+      await crt('onecore/x64/Microsoft.VC143.CRT');
+      await crt('not-a-version/x64/Microsoft.VC143.CRT');
+      final selected = await selectCppRuntime(
+        Directory(p.join(project.path, 'redist')),
+      );
+      expect(selected.path, expected.path);
+    },
+  );
+
+  test('Rejects installations containing only a OneCore runtime', () async {
+    await crt('14.44.35208/onecore/x64/Microsoft.VC143.CRT');
+    await expectLater(
+      selectCppRuntime(Directory(p.join(project.path, 'redist'))),
+      throwsStateError,
+    );
+  });
+
   test(
     'Windows ZIP preserves the bundle directory and includes runtime DLLs',
     () async {

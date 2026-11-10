@@ -74,27 +74,46 @@ Future<Directory> findCppRuntime() async {
   if (installation.isEmpty) {
     throw StateError('Visual Studio C++ tools not found.');
   }
-  final redist = Directory(p.join(installation, 'VC', 'Redist', 'MSVC'));
-  final candidates = <Directory>[];
-  await for (final entry in redist.list(recursive: true, followLinks: false)) {
-    if (entry is Directory &&
-        p.basename(entry.parent.path) == 'x64' &&
-        RegExp(r'^Microsoft\.VC\d+\.CRT$').hasMatch(p.basename(entry.path))) {
-      candidates.add(entry);
+  return selectCppRuntime(
+    Directory(p.join(installation, 'VC', 'Redist', 'MSVC')),
+  );
+}
+
+/// Desktop CRTs live directly under `<version>/x64`. Do not recursively select
+/// OneCore, debug or other specialized runtime variants.
+Future<Directory> selectCppRuntime(Directory redist) async {
+  final candidates = <({Directory directory, List<int> version})>[];
+  await for (final entry in redist.list(followLinks: false)) {
+    if (entry is! Directory) continue;
+    final name = p.basename(entry.path);
+    if (!RegExp(r'^\d+(?:\.\d+)+$').hasMatch(name)) continue;
+    final x64 = Directory(p.join(entry.path, 'x64'));
+    if (!await x64.exists()) continue;
+    await for (final crt in x64.list(followLinks: false)) {
+      if (crt is! Directory ||
+          !RegExp(r'^Microsoft\.VC\d+\.CRT$').hasMatch(p.basename(crt.path))) {
+        continue;
+      }
+      var complete = true;
+      for (final dll in cppRuntimeFiles) {
+        if (!await File(p.join(crt.path, dll)).exists()) complete = false;
+      }
+      if (complete) {
+        candidates.add((
+          directory: crt,
+          version: name.split('.').map(int.parse).toList(),
+        ));
+      }
     }
   }
   if (candidates.isEmpty) {
-    throw StateError('Visual C++ x64 runtime DLLs not found.');
+    throw StateError('Visual C++ x64 desktop runtime DLLs not found.');
   }
-  candidates.sort((a, b) => _compareRuntimeVersions(a, b));
-  return candidates.last;
+  candidates.sort((a, b) => _compareVersions(a.version, b.version));
+  return candidates.last.directory;
 }
 
-int _compareRuntimeVersions(Directory a, Directory b) {
-  List<int> parts(Directory dir) =>
-      p.basename(dir.parent.parent.path).split('.').map(int.parse).toList();
-  final left = parts(a);
-  final right = parts(b);
+int _compareVersions(List<int> left, List<int> right) {
   for (var i = 0; i < left.length && i < right.length; i++) {
     final difference = left[i].compareTo(right[i]);
     if (difference != 0) return difference;
@@ -156,6 +175,10 @@ const requiredWindowsFiles = [
   'flutter_windows.dll',
   'data/app.so',
   'data/icudtl.dat',
+  ...cppRuntimeFiles,
+];
+
+const cppRuntimeFiles = [
   'msvcp140.dll',
   'vcruntime140.dll',
   'vcruntime140_1.dll',
