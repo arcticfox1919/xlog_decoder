@@ -179,7 +179,7 @@ the application.
 
 ### GitHub Actions builds
 
-[desktop.yml](.github/workflows/desktop.yml) uses Flutter 3.35.7 as its CI build and validation baseline (local SDKs only need to satisfy the constraints in `pubspec.yaml`), runs analysis and tests for both the pure Dart core and the Flutter client, then builds Windows x64 and macOS arm64. Only pushes of `v*` tags and manual runs generate downloadable artifacts; branch pushes and PRs do not trigger builds. Manual runs only produce Actions artifacts; version tag pushes also publish a GitHub Release. To package Windows locally, run `./scripts/build_windows.ps1` in PowerShell; output is saved to `build/windows/dist/`.
+[desktop.yml](.github/workflows/desktop.yml) uses Flutter 3.35.7 as its CI build and validation baseline (local SDKs only need to satisfy the constraints in `pubspec.yaml`), runs analysis and tests for both the pure Dart core and the Flutter client, then builds Windows x64 and macOS arm64. Only pushes of `v*` tags and manual runs generate downloadable artifacts; branch pushes and PRs do not trigger builds. Manual runs only produce Actions artifacts; version tag pushes also publish a GitHub Release. To package Windows locally, run `dart scripts/build_windows.dart`; output is saved to `build/windows/dist/`.
 
 To publish a release, update and commit the version in `pubspec.yaml`, then push a matching tag:
 

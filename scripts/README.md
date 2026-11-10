@@ -22,3 +22,7 @@ Development exposes one origin on port 18780. `/api` requests stream to the back
 Build commands do not load runtime server configuration or pass server settings to the frontend. `build` and `build-all` accept `--api-url https://api.example.com/` for separate deployments; otherwise the frontend uses its own origin.
 
 `web.dart` parses options and starts `WebRunner`. `src/development_command.dart` owns development startup and the gateway; `src/build_command.dart` owns build steps. `src/process_support.dart` handles SDK selection, child processes, readiness and shutdown. `src/dev_gateway.dart` handles streaming HTTP forwarding; `api_upload_tunnel.dart` is limited to development API requests with bodies and returns early backend rejections without waiting for the upload to finish; `web_socket_relay.dart` owns WebSocket shutdown and `bootstrap_urls.dart` rewrites development URLs. Port and argument validation live in their own files.
+
+## Desktop packaging
+
+Run `dart scripts/build_windows.dart` on Windows or `dart scripts/build_macos.dart` on macOS, using the Dart bundled with Flutter. Both scripts share version parsing, Flutter discovery and process helpers in `src/desktop_build_support.dart`. Windows packages include the Visual C++ runtime DLLs; macOS packages retain native signing and archive tools.

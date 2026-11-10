@@ -142,7 +142,7 @@ dart scripts/build_macos.dart
 
 ### GitHub Actions 自动构建
 
-[desktop.yml](.github/workflows/desktop.yml) 使用 Flutter 3.35.7 作为 CI 构建验证基线（本地 SDK 只需满足 `pubspec.yaml` 约束），先分别运行纯 Dart 核心库与 Flutter 客户端的静态分析和测试，再分别构建 Windows x64 和 macOS arm64。仅推送 `v*` 标签或在 Actions 中手动运行时生成下载产物；普通分支推送和 PR 不触发构建。手动运行仅生成 Actions 产物，推送版本标签才会自动发布 Release。Windows 本地也可用 PowerShell 执行 `./scripts/build_windows.ps1`，产物位于 `build/windows/dist/`。
+[desktop.yml](.github/workflows/desktop.yml) 使用 Flutter 3.35.7 作为 CI 构建验证基线（本地 SDK 只需满足 `pubspec.yaml` 约束），先分别运行纯 Dart 核心库与 Flutter 客户端的静态分析和测试，再分别构建 Windows x64 和 macOS arm64。仅推送 `v*` 标签或在 Actions 中手动运行时生成下载产物；普通分支推送和 PR 不触发构建。手动运行仅生成 Actions 产物，推送版本标签才会自动发布 Release。Windows 本地也可执行 `dart scripts/build_windows.dart`，产物位于 `build/windows/dist/`。
 
 发布正式版本时，先更新 `pubspec.yaml` 的版本号并提交，再推送匹配的标签，例如：
 

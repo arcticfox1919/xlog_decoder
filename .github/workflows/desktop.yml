@@ -64,7 +64,7 @@ jobs:
             runner: windows-2022
             archive: build/windows/dist/*.zip
           - platform: macOS-arm64
-            runner: macos-14
+            runner: macos-15
             archive: build/macos/dist/*.zip
     runs-on: ${{ matrix.runner }}
     steps:
@@ -79,8 +79,7 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Build and package Windows
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: ./scripts/build_windows.ps1
+        run: dart scripts/build_windows.dart
       - name: Build and package macOS
         if: runner.os == 'macOS'
         run: dart scripts/build_macos.dart

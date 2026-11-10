@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'src/desktop_build_support.dart';
+
 const appName = 'XlogDecoder.app';
 const usage = '''
 Usage: dart scripts/build_macos.dart
@@ -38,63 +40,6 @@ Future<void> main(List<String> arguments) async {
   }
 }
 
-class AppVersion {
-  const AppVersion(this.full, this.name, this.buildNumber);
-
-  final String full;
-  final String name;
-  final String buildNumber;
-
-  String get archiveName => 'Xlog-Decoder-$full-macOS-arm64.zip';
-}
-
-Future<AppVersion> readVersion(Directory project) async {
-  final pubspec = await File('${project.path}/pubspec.yaml').readAsString();
-  final match = RegExp(
-    r'^version:\s*(\S+)',
-    multiLine: true,
-  ).firstMatch(pubspec);
-  final version = (match?.group(1) ?? '')
-      .replaceAll("'", '')
-      .replaceAll('"', '');
-  final valid = RegExp(r'^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$');
-  if (!valid.hasMatch(version)) {
-    throw const FormatException(
-      'pubspec.yaml does not contain a valid version, such as 1.0.0.',
-    );
-  }
-  return AppVersion(version, version, '1');
-}
-
-String findFlutter(Directory project) {
-  final override = Platform.environment['FLUTTER_BIN'];
-  if (override != null && override.isNotEmpty) {
-    if (!File(override).existsSync()) {
-      throw StateError(
-        'FLUTTER_BIN points to a file that does not exist: $override',
-      );
-    }
-    return File(override).absolute.path;
-  }
-
-  // When running with Flutter's bundled Dart, the SDK root is four levels up.
-  final sdkBin = File(Platform.resolvedExecutable).parent.parent.parent.parent;
-  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
-  final candidates = [
-    '${project.path}/.fvm/flutter_sdk/bin/flutter',
-    '${sdkBin.path}/flutter',
-    if (flutterRoot != null) '$flutterRoot/bin/flutter',
-    for (final directory in (Platform.environment['PATH'] ?? '').split(':'))
-      if (directory.isNotEmpty) '$directory/flutter',
-  ];
-  for (final candidate in candidates) {
-    if (File(candidate).existsSync()) return File(candidate).absolute.path;
-  }
-  throw StateError(
-    'Flutter executable not found. Set FLUTTER_BIN to its path and try again.',
-  );
-}
-
 Future<void> buildRelease(
   Directory project,
   String flutter,
@@ -120,7 +65,9 @@ Future<File> packageRelease(Directory project, AppVersion version) async {
   final staging = await output.createTemp('.package.');
   try {
     final app = Directory('${staging.path}/$appName');
-    final archive = File('${staging.path}/${version.archiveName}');
+    final archive = File(
+      '${staging.path}/${version.archiveNameFor('macOS-arm64')}',
+    );
 
     await runCommand('ditto', ['$release/xlog_decoder.app', app.path]);
     await verifyVersion(app, version);
@@ -129,7 +76,7 @@ Future<File> packageRelease(Directory project, AppVersion version) async {
     await createArchive(app, archive);
     await publish(app, archive, output, staging);
 
-    return File('${output.path}/${version.archiveName}');
+    return File('${output.path}/${version.archiveNameFor('macOS-arm64')}');
   } finally {
     await staging.delete(recursive: true);
   }
@@ -211,34 +158,4 @@ Future<void> publish(
   }
   final legacyArchive = File('${output.path}/Xlog-Decoder-macOS.zip');
   if (await legacyArchive.exists()) await legacyArchive.delete();
-}
-
-Future<void> runCommand(
-  String executable,
-  List<String> arguments, {
-  String? workingDirectory,
-}) async {
-  final process = await Process.start(
-    executable,
-    arguments,
-    workingDirectory: workingDirectory,
-    mode: ProcessStartMode.inheritStdio,
-  );
-  final code = await process.exitCode;
-  if (code != 0) {
-    throw ProcessException(executable, arguments, 'Command failed', code);
-  }
-}
-
-Future<String> commandOutput(String executable, List<String> arguments) async {
-  final result = await Process.run(executable, arguments);
-  if (result.exitCode != 0) {
-    throw ProcessException(
-      executable,
-      arguments,
-      result.stderr.toString(),
-      result.exitCode,
-    );
-  }
-  return result.stdout.toString().trim();
 }
