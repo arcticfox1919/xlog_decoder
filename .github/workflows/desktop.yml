@@ -40,6 +40,15 @@ jobs:
           tag = os.environ['GITHUB_REF_NAME']
           if tag != f'v{version}':
               raise SystemExit(f'Tag {tag} must match pubspec.yaml version: v{version}')
+      - name: Resolve pure Dart core dependencies
+        working-directory: packages/xlog_decode
+        run: dart pub get --enforce-lockfile
+      - name: Analyze pure Dart core
+        working-directory: packages/xlog_decode
+        run: dart analyze
+      - name: Test pure Dart core
+        working-directory: packages/xlog_decode
+        run: dart test
       - run: flutter analyze
       - run: flutter test
 

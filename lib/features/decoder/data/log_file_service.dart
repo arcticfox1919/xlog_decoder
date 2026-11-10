@@ -4,8 +4,9 @@ import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as p;
+import 'package:xlog_decode/xlog_decode.dart';
 
-import '../../../core/xlog/xlog_decoder.dart';
+import '../domain/decode_failure.dart';
 import '../domain/decode_models.dart';
 
 abstract interface class LogFileService {
@@ -23,7 +24,9 @@ class LocalLogFileService implements LogFileService {
 
 Future<DecodeBatchResult> _decodeInput(DecodeRequest request) async {
   final input = File(p.absolute(request.inputPath));
-  if (!await input.exists()) throw const FormatException('找不到输入文件，请重新选择。');
+  if (!await input.exists()) {
+    throw const DecodeFailure(DecodeErrorCode.inputMissing);
+  }
   final outputDirectory = request.outputDirectory?.trim();
   final directory = Directory(
     outputDirectory == null || outputDirectory.isEmpty
@@ -68,18 +71,24 @@ Future<DecodeBatchResult> _decodeInput(DecodeRequest request) async {
       try {
         // Decode in memory, never extract archive-provided paths to disk.
         if (entry.size > 256 * 1024 * 1024) {
-          throw const FormatException('ZIP 内单个日志超过 256 MiB。');
+          throw const DecodeFailure(DecodeErrorCode.zipEntryTooLarge);
         }
         final bytes = entry.readBytes();
-        if (bytes == null) throw const FormatException('无法读取 ZIP 内的日志。');
+        if (bytes == null) {
+          throw const DecodeFailure(DecodeErrorCode.zipEntryUnreadable);
+        }
         if (entry.crc32 != null && getCrc32(bytes) != entry.crc32) {
-          throw const FormatException('ZIP 文件校验失败，日志可能已损坏。');
+          throw const DecodeFailure(DecodeErrorCode.zipChecksumFailed);
         }
         zipOutput ??= await _reserveZipDirectory(directory, input.path);
         results.add(await _decodeLog(entry.name, bytes, zipOutput, decoder));
       } on Exception catch (error) {
         results.add(
-          DecodedFile(sourceName: entry.name, error: _message(error)),
+          DecodedFile(
+            sourceName: entry.name,
+            error: _message(error),
+            failure: error is DecodeFailure ? error : null,
+          ),
         );
       } finally {
         entry.clear();
@@ -89,7 +98,7 @@ Future<DecodeBatchResult> _decodeInput(DecodeRequest request) async {
     stream.closeSync();
   }
   if (results.isEmpty) {
-    throw const FormatException('ZIP 内没有找到 .xlog、.log 或 .bin 日志文件。');
+    throw const DecodeFailure(DecodeErrorCode.zipNoLogs);
   }
   return DecodeBatchResult(results, skippedEntries: skipped);
 }
@@ -103,10 +112,8 @@ Future<DecodedFile> _decodeLog(
   try {
     final result = decoder.decode(bytes);
     if (result.blocks.isEmpty || result.bytes.isEmpty) {
-      final detail = result.issues.isEmpty
-          ? ''
-          : '\n${result.issues.first.message}';
-      throw FormatException('未恢复到日志内容，请检查文件格式及解密私钥。$detail');
+      final detail = result.issues.isEmpty ? '' : result.issues.first.message;
+      throw DecodeFailure(DecodeErrorCode.noLogContent, detail: detail);
     }
     final output = await _reserveOutput(directory, name);
     try {
@@ -123,7 +130,11 @@ Future<DecodedFile> _decodeLog(
       issues: List.unmodifiable(result.issues.map((issue) => issue.toString())),
     );
   } on Exception catch (error) {
-    return DecodedFile(sourceName: name, error: _message(error));
+    return DecodedFile(
+      sourceName: name,
+      error: _message(error),
+      failure: error is DecodeFailure ? error : null,
+    );
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
 
 class DecoderSettings extends StatefulWidget {
@@ -36,29 +37,36 @@ class _DecoderSettingsState extends State<DecoderSettings> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
             Icon(Icons.tune_rounded, size: 16, color: AppColors.muted),
             SizedBox(width: 7),
-            Text(
-              '解码设置',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context).decoderSettings,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            Spacer(),
+            const SizedBox(width: 8),
             Text(
-              '自动保存',
+              AppLocalizations.of(context).autoSave,
               style: TextStyle(fontSize: 11, color: AppColors.faint),
             ),
           ],
         ),
         const SizedBox(height: 24),
-        const Text(
-          '输出目录',
+        Text(
+          AppLocalizations.of(context).outputDirectory,
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 9),
         Tooltip(
-          message: widget.outputDirectory ?? '点击选择输出目录',
+          message:
+              widget.outputDirectory ??
+              AppLocalizations.of(context).chooseOutputDirectory,
           child: Material(
             color: AppColors.subtle,
             shape: RoundedRectangleBorder(
@@ -70,10 +78,7 @@ class _DecoderSettingsState extends State<DecoderSettings> {
               borderRadius: BorderRadius.circular(9),
               onTap: widget.busy ? null : widget.onSelectDirectory,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 13,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 13),
                 child: Row(
                   children: [
                     const Icon(
@@ -84,7 +89,8 @@ class _DecoderSettingsState extends State<DecoderSettings> {
                     const SizedBox(width: 9),
                     Expanded(
                       child: Text(
-                        widget.outputDirectory ?? '原文件所在目录',
+                        widget.outputDirectory ??
+                            AppLocalizations.of(context).sourceDirectory,
                         style: const TextStyle(fontSize: 12),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -108,21 +114,24 @@ class _DecoderSettingsState extends State<DecoderSettings> {
             child: TextButton(
               onPressed: widget.busy ? null : widget.onResetDirectory,
               style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              child: const Text('恢复默认'),
+              child: Text(AppLocalizations.of(context).resetDirectory),
             ),
           ),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 20),
           child: Divider(height: 1),
         ),
-        const Row(
+        Row(
           children: [
             Text(
-              '解密私钥',
+              AppLocalizations.of(context).privateKey,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
             SizedBox(width: 6),
-            Text('可选', style: TextStyle(fontSize: 11, color: AppColors.faint)),
+            Text(
+              AppLocalizations.of(context).optional,
+              style: TextStyle(fontSize: 11, color: AppColors.faint),
+            ),
           ],
         ),
         const SizedBox(height: 9),
@@ -135,11 +144,13 @@ class _DecoderSettingsState extends State<DecoderSettings> {
           enableSuggestions: false,
           style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
           decoration: InputDecoration(
-            hintText: '64 位十六进制私钥',
+            hintText: AppLocalizations.of(context).privateKeyHint,
             errorText: widget.error,
             errorMaxLines: 3,
             suffixIcon: IconButton(
-              tooltip: _showKey ? '隐藏私钥' : '显示私钥',
+              tooltip: _showKey
+                  ? AppLocalizations.of(context).hidePrivateKey
+                  : AppLocalizations.of(context).showPrivateKey,
               onPressed: widget.busy
                   ? null
                   : () => setState(() => _showKey = !_showKey),
@@ -160,10 +171,10 @@ class _DecoderSettingsState extends State<DecoderSettings> {
             visualDensity: VisualDensity.compact,
           ),
           icon: const Icon(Icons.file_open_outlined, size: 14),
-          label: const Text('从文件导入私钥'),
+          label: Text(AppLocalizations.of(context).importPrivateKey),
         ),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -177,7 +188,7 @@ class _DecoderSettingsState extends State<DecoderSettings> {
             SizedBox(width: 6),
             Expanded(
               child: Text(
-                '未加密日志可留空。私钥加密保存在本机，清空输入即可删除。',
+                AppLocalizations.of(context).privateKeyHelp,
                 style: TextStyle(
                   fontSize: 11,
                   color: AppColors.muted,

@@ -37,6 +37,12 @@ class DelayedPreferencesStore extends FakePreferencesStore {
 }
 
 void main() {
+  setUp(() {
+    final dispatcher =
+        TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher;
+    dispatcher.localesTestValue = const [Locale('zh')];
+    addTearDown(dispatcher.clearLocalesTestValue);
+  });
   testWidgets(
     'Workspace renders while settings load, then restores and enables decoding',
     (tester) async {

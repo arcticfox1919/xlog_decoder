@@ -198,6 +198,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -280,6 +285,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  intl:
+    dependency: "direct main"
+    description:
+      name: intl
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.2"
   jni:
     dependency: transitive
     description:
@@ -449,7 +462,7 @@ packages:
     source: hosted
     version: "2.1.8"
   pointycastle:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: pointycastle
       sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"
@@ -573,6 +586,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  xlog_decode:
+    dependency: "direct main"
+    description:
+      path: "packages/xlog_decode"
+      relative: true
+    source: path
+    version: "0.1.0"
   xml:
     dependency: transitive
     description:

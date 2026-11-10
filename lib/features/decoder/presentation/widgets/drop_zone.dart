@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
 
 class LogDropZone extends StatefulWidget {
@@ -32,7 +33,7 @@ class _LogDropZoneState extends State<LogDropZone> {
     setState(() => _hovering = false);
     final files = details.files.whereType<DropItemFile>().toList();
     if (files.isEmpty) {
-      widget.onError('请拖入日志文件或 ZIP 文件，不支持直接拖入文件夹。');
+      widget.onError(AppLocalizations.of(context).dropFoldersError);
       return;
     }
     final access = <DropItemFile>[];
@@ -49,7 +50,11 @@ class _LogDropZoneState extends State<LogDropZone> {
       }
       await widget.onFiles(files.map((file) => file.path).toList());
     } on Exception catch (error) {
-      widget.onError('无法读取拖入的文件：$error');
+      if (mounted) {
+        widget.onError(
+          AppLocalizations.of(context).dropReadError(error.toString()),
+        );
+      }
     } finally {
       for (final file in access) {
         await DesktopDrop.instance.stopAccessingSecurityScopedResource(
@@ -74,7 +79,7 @@ class _LogDropZoneState extends State<LogDropZone> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(
                   Icons.add_circle_outline_rounded,
@@ -82,13 +87,18 @@ class _LogDropZoneState extends State<LogDropZone> {
                   color: AppColors.muted,
                 ),
                 SizedBox(width: 7),
-                Text(
-                  '添加日志',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).addLogs,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-                Spacer(),
+                const SizedBox(width: 8),
                 Text(
-                  '支持多选',
+                  AppLocalizations.of(context).multipleSelection,
                   style: TextStyle(fontSize: 11, color: AppColors.faint),
                 ),
               ],
@@ -101,10 +111,7 @@ class _LogDropZoneState extends State<LogDropZone> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 160),
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 24,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 24),
                 decoration: BoxDecoration(
                   color: active ? AppColors.accentSoft : AppColors.subtle,
                   borderRadius: BorderRadius.circular(11),
@@ -142,10 +149,10 @@ class _LogDropZoneState extends State<LogDropZone> {
                     const SizedBox(height: 16),
                     Text(
                       widget.busy
-                          ? '正在解码日志…'
+                          ? AppLocalizations.of(context).decodingLogs
                           : active
-                          ? '松开，开始解码'
-                          : '拖入日志或 ZIP',
+                          ? AppLocalizations.of(context).releaseToDecode
+                          : AppLocalizations.of(context).dropLogs,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -155,11 +162,10 @@ class _LogDropZoneState extends State<LogDropZone> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      widget.busy ? '完成后可在下方查看结果' : '自动解压、解密，生成可读日志',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.muted,
-                      ),
+                      widget.busy
+                          ? AppLocalizations.of(context).resultsBelow
+                          : AppLocalizations.of(context).dropDescription,
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -169,7 +175,7 @@ class _LogDropZoneState extends State<LogDropZone> {
                           ? null
                           : widget.onSelect,
                       icon: const Icon(Icons.add_rounded, size: 17),
-                      label: const Text('选择文件'),
+                      label: Text(AppLocalizations.of(context).selectFiles),
                     ),
                     const SizedBox(height: 18),
                     const Text(

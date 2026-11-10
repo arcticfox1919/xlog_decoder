@@ -9,8 +9,9 @@ abstract interface class EncryptionKeyStore {
   Future<void> write(String key);
 }
 
-/// Only the directory is stored in plain text. The private key lives in a
-/// separate AES-256 encrypted box; its random key is kept in the OS key store.
+/// The directory and language code are stored in plain text. The private key
+/// lives in a separate AES-256 encrypted box; its random key is kept in the OS
+/// key store.
 class HivePreferencesStore implements DecoderPreferencesStore {
   HivePreferencesStore({
     required Future<String> Function() directoryProvider,
@@ -55,6 +56,20 @@ class HivePreferencesStore implements DecoderPreferencesStore {
       encryptionCipher: HiveAesCipher(key),
     );
   }();
+
+  @override
+  Future<String?> loadLanguageCode() async =>
+      (await _openPreferences()).get('languageCode');
+
+  @override
+  Future<void> saveLanguageCode(String? languageCode) async {
+    final preferences = await _openPreferences();
+    if (languageCode == null) {
+      await preferences.delete('languageCode');
+    } else {
+      await preferences.put('languageCode', languageCode);
+    }
+  }
 
   @override
   Future<DecoderPreferences> load() async {

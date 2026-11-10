@@ -1,3 +1,5 @@
+import 'decode_failure.dart';
+
 class DecodeRequest {
   const DecodeRequest({
     required this.inputPath,
@@ -18,6 +20,7 @@ class DecodedFile {
     this.blockCount = 0,
     this.issues = const [],
     this.error,
+    this.failure,
   });
 
   final String sourceName;
@@ -26,6 +29,7 @@ class DecodedFile {
   final int blockCount;
   final List<String> issues;
   final String? error;
+  final DecodeFailure? failure;
   bool get succeeded => outputPath != null;
 }
 
@@ -50,6 +54,7 @@ class DecodeTask {
     this.status = DecodeTaskStatus.queued,
     this.result,
     this.error,
+    this.failure,
   });
 
   final int id;
@@ -57,4 +62,5 @@ class DecodeTask {
   final DecodeTaskStatus status;
   final DecodeBatchResult? result;
   final String? error;
+  final DecodeFailure? failure;
 }

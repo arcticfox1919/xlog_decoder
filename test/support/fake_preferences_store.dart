@@ -1,7 +1,14 @@
 import 'package:xlog_decoder/features/decoder/data/decoder_preferences.dart';
 
 class FakePreferencesStore implements DecoderPreferencesStore {
+  String? languageCode;
   String? directory;
+
+  @override
+  Future<String?> loadLanguageCode() async => languageCode;
+
+  @override
+  Future<void> saveLanguageCode(String? value) async => languageCode = value;
   String? privateKey;
 
   @override

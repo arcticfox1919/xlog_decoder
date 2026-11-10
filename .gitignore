@@ -27,11 +27,20 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.fvm/
+.fvmrc
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+**/build/
 /coverage/
+
+# Local server configuration may contain access tokens and private keys.
+/server.yaml
+/server.yml
+/packages/xlog_server/server.yaml
+/packages/xlog_server/server.yml
+**/.xlog-data/
 
 # Symbolication related
 app.*.symbols

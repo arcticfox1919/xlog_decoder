@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
-import '../../domain/decode_models.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
+import '../../domain/decode_models.dart';
+import '../decode_failure_text.dart';
 
 class DecodeTaskList extends StatelessWidget {
   const DecodeTaskList({
@@ -23,23 +25,33 @@ class DecodeTaskList extends StatelessWidget {
     children: [
       Row(
         children: [
-          const Text(
-            '处理记录',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
-          if (tasks.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Text(
-                '${tasks.length} 个任务',
-                style: const TextStyle(fontSize: 13, color: AppColors.muted),
-              ),
+          Expanded(
+            child: Wrap(
+              spacing: 10,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  AppLocalizations.of(context).processingHistory,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (tasks.isNotEmpty)
+                  Text(
+                    AppLocalizations.of(context).taskCount(tasks.length),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.muted,
+                    ),
+                  ),
+              ],
             ),
-          const Spacer(),
+          ),
           TextButton(
             onPressed: busy || tasks.isEmpty ? null : onClear,
             style: TextButton.styleFrom(foregroundColor: AppColors.muted),
-            child: const Text('清空记录'),
+            child: Text(AppLocalizations.of(context).clearHistory),
           ),
         ],
       ),
@@ -49,12 +61,12 @@ class DecodeTaskList extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
           decoration: panelDecoration(),
-          child: const Column(
+          child: Column(
             children: [
               Icon(Icons.inbox_outlined, size: 28, color: AppColors.faint),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                '还没有处理记录',
+                AppLocalizations.of(context).noHistory,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -63,7 +75,7 @@ class DecodeTaskList extends StatelessWidget {
               ),
               SizedBox(height: 6),
               Text(
-                '生成 .log 日志，ZIP 结果保存到独立文件夹',
+                AppLocalizations.of(context).outputHelp,
                 style: TextStyle(fontSize: 11, color: AppColors.faint),
                 textAlign: TextAlign.center,
               ),
@@ -90,23 +102,27 @@ class _TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, color, icon) = switch (task.status) {
       DecodeTaskStatus.queued => (
-        '等待中',
+        AppLocalizations.of(context).statusQueued,
         AppColors.faint,
         Icons.schedule_rounded,
       ),
-      DecodeTaskStatus.running => ('处理中', AppColors.accent, Icons.sync_rounded),
+      DecodeTaskStatus.running => (
+        AppLocalizations.of(context).statusRunning,
+        AppColors.accent,
+        Icons.sync_rounded,
+      ),
       DecodeTaskStatus.success => (
-        '已完成',
+        AppLocalizations.of(context).statusSuccess,
         AppColors.accent,
         Icons.check_circle_outline_rounded,
       ),
       DecodeTaskStatus.warning => (
-        '部分恢复',
+        AppLocalizations.of(context).statusWarning,
         AppColors.warning,
         Icons.warning_amber_rounded,
       ),
       DecodeTaskStatus.failure => (
-        '未完成',
+        AppLocalizations.of(context).statusFailure,
         AppColors.danger,
         Icons.error_outline_rounded,
       ),
@@ -137,19 +153,16 @@ class _TaskCard extends StatelessWidget {
             color: color,
           ),
         ),
-        title: Row(
+        title: Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Expanded(
-              child: Text(
-                p.basename(task.inputPath),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
+            Text(
+              p.basename(task.inputPath),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
               decoration: BoxDecoration(
@@ -161,12 +174,14 @@ class _TaskCard extends StatelessWidget {
                 children: [
                   Icon(icon, size: 13, color: color),
                   const SizedBox(width: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: color,
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: color,
+                      ),
                     ),
                   ),
                 ],
@@ -179,9 +194,19 @@ class _TaskCard extends StatelessWidget {
           child: Text(
             result == null
                 ? task.inputPath
-                : '已生成 ${result.successCount} 个日志'
-                      '${result.failureCount > 0 ? ' · ${result.failureCount} 个失败' : ''}'
-                      '${result.skippedEntries > 0 ? ' · 跳过 ${result.skippedEntries} 个非日志条目' : ''}',
+                : [
+                    AppLocalizations.of(
+                      context,
+                    ).generatedLogs(result.successCount),
+                    if (result.failureCount > 0)
+                      AppLocalizations.of(
+                        context,
+                      ).failedLogs(result.failureCount),
+                    if (result.skippedEntries > 0)
+                      AppLocalizations.of(
+                        context,
+                      ).skippedEntries(result.skippedEntries),
+                  ].join(' · '),
             style: const TextStyle(fontSize: 12, color: AppColors.muted),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -194,7 +219,12 @@ class _TaskCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: SelectableText(
-                task.error!,
+                task.failure == null
+                    ? task.error!
+                    : decodeFailureText(
+                        AppLocalizations.of(context),
+                        task.failure!,
+                      ),
                 style: const TextStyle(color: AppColors.danger, height: 1.6),
               ),
             ),
@@ -235,15 +265,19 @@ class _OutputFile extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: '复制输出路径',
+                tooltip: AppLocalizations.of(context).copyOutputPath,
                 onPressed: () async {
                   await Clipboard.setData(
                     ClipboardData(text: file.outputPath!),
                   );
                   if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('已复制输出路径')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context).outputPathCopied,
+                        ),
+                      ),
+                    );
                   }
                 },
                 icon: const Icon(Icons.copy_rounded, size: 17),
@@ -252,12 +286,17 @@ class _OutputFile extends StatelessWidget {
           ),
         if (file.succeeded)
           Text(
-            '${file.blockCount} 个日志块 · ${_size(file.byteCount)}',
+            '${AppLocalizations.of(context).logBlocks(file.blockCount)} · ${_size(file.byteCount)}',
             style: const TextStyle(fontSize: 12, color: AppColors.faint),
           ),
         if (file.error != null)
           SelectableText(
-            file.error!,
+            file.failure == null
+                ? file.error!
+                : decodeFailureText(
+                    AppLocalizations.of(context),
+                    file.failure!,
+                  ),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.danger,
@@ -268,7 +307,9 @@ class _OutputFile extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: SelectableText(
-              '恢复提示（${file.issues.length}）\n${file.issues.join('\n')}',
+              AppLocalizations.of(
+                context,
+              ).recoveryHints(file.issues.length, file.issues.join('\n')),
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.warning,

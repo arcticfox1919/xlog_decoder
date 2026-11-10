@@ -53,6 +53,19 @@ void main() {
   );
 
   test(
+    'language survives reopening independently of private key storage',
+    () async {
+      await store().saveLanguageCode('en');
+      await Hive.close();
+      expect(await store().loadLanguageCode(), 'en');
+      expect(keys.reads, 0);
+      await store().saveLanguageCode(null);
+      await Hive.close();
+      expect(await store().loadLanguageCode(), isNull);
+    },
+  );
+
+  test(
     'private key survives reopening and never appears in Hive files',
     () async {
       final privateKey = '0' * 63 + '1';

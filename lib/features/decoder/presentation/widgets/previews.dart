@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
-import 'decoder_settings.dart';
-import 'decode_task_list.dart';
-import '../../domain/decode_models.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
+import '../../domain/decode_models.dart';
+import 'decode_task_list.dart';
+import 'decoder_settings.dart';
 
 @Preview(name: '紧凑设置栏', size: Size(300, 480))
 @Preview(name: '窄窗口设置栏', size: Size(420, 480))
 Widget decoderSettingsPreview() => MaterialApp(
   theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
   home: const Scaffold(body: SingleChildScrollView(child: _SettingsPreview())),
 );
 
@@ -44,6 +47,8 @@ class _SettingsPreviewState extends State<_SettingsPreview> {
 @Preview(name: '处理记录与状态', size: Size(700, 500))
 Widget decodeTaskStatesPreview() => MaterialApp(
   theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(20),

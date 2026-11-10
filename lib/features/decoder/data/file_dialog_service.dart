@@ -7,14 +7,25 @@ abstract interface class FileDialogService {
 }
 
 class NativeFileDialogService implements FileDialogService {
-  const NativeFileDialogService();
+  const NativeFileDialogService({
+    this.logFilesLabel = 'Logs or ZIP',
+    this.allFilesLabel = 'All files',
+    this.directoryButtonLabel = 'Set output directory',
+  });
+
+  final String logFilesLabel;
+  final String allFilesLabel;
+  final String directoryButtonLabel;
 
   @override
   Future<List<String>> selectLogs() async => [
     for (final file in await openFiles(
-      acceptedTypeGroups: const [
-        XTypeGroup(label: '日志或 ZIP', extensions: ['xlog', 'log', 'bin', 'zip']),
-        XTypeGroup(label: '所有文件'),
+      acceptedTypeGroups: [
+        XTypeGroup(
+          label: logFilesLabel,
+          extensions: ['xlog', 'log', 'bin', 'zip'],
+        ),
+        XTypeGroup(label: allFilesLabel),
       ],
     ))
       file.path,
@@ -22,7 +33,7 @@ class NativeFileDialogService implements FileDialogService {
 
   @override
   Future<String?> selectDirectory() =>
-      getDirectoryPath(confirmButtonText: '设为输出目录');
+      getDirectoryPath(confirmButtonText: directoryButtonLabel);
 
   @override
   Future<String?> readPrivateKey() async => (await openFile())?.readAsString();

@@ -7,6 +7,8 @@ class DecoderPreferences {
 
 abstract interface class DecoderPreferencesStore {
   Future<DecoderPreferences> load();
+  Future<String?> loadLanguageCode();
+  Future<void> saveLanguageCode(String? languageCode);
   Future<void> saveOutputDirectory(String? directory);
   Future<void> savePrivateKey(String? privateKeyHex);
 }

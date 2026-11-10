@@ -1,0 +1,32 @@
+# Copy this file to server.yaml, then adjust as needed.
+# Relative paths below are resolved from this file's directory.
+host: 127.0.0.1
+port: 18781
+dataDirectory: .xlog-data
+allowedOrigins:
+  - http://localhost:18780
+  - http://127.0.0.1:18780
+
+limits:
+  maxConcurrentJobs: 2
+  maxQueuedJobs: 4
+  maxRetainedJobs: 64
+  maxUploadBytes: 268435456
+  maxOutputBytes: 134217728
+  jobTtlSeconds: 3600
+  uploadTimeoutSeconds: 600
+
+# Optional JSON key file, or use the inline `keys` mapping below (not both).
+# Every configured private key is a server-side candidate. Log frame magic
+# selects the format, and encrypted blocks automatically match a candidate.
+# Uploads and ZIP members do not require a key identifier or a UI selection.
+# If any encrypted block has no matching key, the entire job fails without
+# publishing partial output, including otherwise decoded ZIP members.
+# keysFile: /secure/xlog-keys.json
+# keys:
+#   device-a:
+#     label: "Device A"
+#     privateKeyHex: "<64 hexadecimal characters>"
+
+# Optional: serve a built frontend from the same server.
+# webRoot: ../xlog_web/build/jaspr

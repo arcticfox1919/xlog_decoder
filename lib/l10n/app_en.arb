@@ -1,0 +1,294 @@
+{
+  "@@locale": "en",
+  "appTitle": "Xlog Decoder",
+  "@appTitle": {
+    "description": "appTitle"
+  },
+  "appSubtitle": "Narwal log decoding tool",
+  "@appSubtitle": {
+    "description": "appSubtitle"
+  },
+  "localProcessing": "Local processing",
+  "@localProcessing": {
+    "description": "localProcessing"
+  },
+  "privacyNote": "Processed locally  ·  Originals preserved  ·  Unique output names",
+  "@privacyNote": {
+    "description": "privacyNote"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "language"
+  },
+  "systemLanguage": "System default",
+  "@systemLanguage": {
+    "description": "systemLanguage"
+  },
+  "languageSaveError": "Could not save the language setting. Please try again.",
+  "@languageSaveError": {
+    "description": "languageSaveError"
+  },
+  "languageLoadError": "Could not restore the language setting. Using the system language.",
+  "@languageLoadError": {
+    "description": "languageLoadError"
+  },
+  "loadSettingsError": "Could not read saved settings. Select the directory or enter the private key again.",
+  "@loadSettingsError": {
+    "description": "loadSettingsError"
+  },
+  "saveSettingsError": "Could not save settings. Check local storage permissions.",
+  "@saveSettingsError": {
+    "description": "saveSettingsError"
+  },
+  "dialogError": "Could not open the file dialog: {error}",
+  "@dialogError": {
+    "description": "dialogError",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dropFoldersError": "Drop log or ZIP files. Dropping folders is not supported.",
+  "@dropFoldersError": {
+    "description": "dropFoldersError"
+  },
+  "dropReadError": "Could not read dropped files: {error}",
+  "@dropReadError": {
+    "description": "dropReadError",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addLogs": "Add logs",
+  "@addLogs": {
+    "description": "addLogs"
+  },
+  "multipleSelection": "Multiple files",
+  "@multipleSelection": {
+    "description": "multipleSelection"
+  },
+  "decodingLogs": "Decoding logs…",
+  "@decodingLogs": {
+    "description": "decodingLogs"
+  },
+  "releaseToDecode": "Release to decode",
+  "@releaseToDecode": {
+    "description": "releaseToDecode"
+  },
+  "dropLogs": "Drop logs or ZIP files",
+  "@dropLogs": {
+    "description": "dropLogs"
+  },
+  "resultsBelow": "Results will appear below",
+  "@resultsBelow": {
+    "description": "resultsBelow"
+  },
+  "dropDescription": "Extract, decrypt, and generate readable logs",
+  "@dropDescription": {
+    "description": "dropDescription"
+  },
+  "selectFiles": "Select files",
+  "@selectFiles": {
+    "description": "selectFiles"
+  },
+  "decoderSettings": "Decode settings",
+  "@decoderSettings": {
+    "description": "decoderSettings"
+  },
+  "autoSave": "Auto-save",
+  "@autoSave": {
+    "description": "autoSave"
+  },
+  "outputDirectory": "Output directory",
+  "@outputDirectory": {
+    "description": "outputDirectory"
+  },
+  "chooseOutputDirectory": "Click to choose an output directory",
+  "@chooseOutputDirectory": {
+    "description": "chooseOutputDirectory"
+  },
+  "sourceDirectory": "Same as source file",
+  "@sourceDirectory": {
+    "description": "sourceDirectory"
+  },
+  "resetDirectory": "Reset",
+  "@resetDirectory": {
+    "description": "resetDirectory"
+  },
+  "privateKey": "Private key",
+  "@privateKey": {
+    "description": "privateKey"
+  },
+  "optional": "Optional",
+  "@optional": {
+    "description": "optional"
+  },
+  "privateKeyHint": "64 hexadecimal characters",
+  "@privateKeyHint": {
+    "description": "privateKeyHint"
+  },
+  "hidePrivateKey": "Hide private key",
+  "@hidePrivateKey": {
+    "description": "hidePrivateKey"
+  },
+  "showPrivateKey": "Show private key",
+  "@showPrivateKey": {
+    "description": "showPrivateKey"
+  },
+  "importPrivateKey": "Import key from file",
+  "@importPrivateKey": {
+    "description": "importPrivateKey"
+  },
+  "privateKeyHelp": "Leave blank for unencrypted logs. The key is encrypted on this device. Clear the field to delete it.",
+  "@privateKeyHelp": {
+    "description": "privateKeyHelp"
+  },
+  "invalidPrivateKey": "Enter a valid 64-character hexadecimal private key, or leave blank for unencrypted logs.",
+  "@invalidPrivateKey": {
+    "description": "invalidPrivateKey"
+  },
+  "logFiles": "Logs or ZIP",
+  "@logFiles": {
+    "description": "logFiles"
+  },
+  "allFiles": "All files",
+  "@allFiles": {
+    "description": "allFiles"
+  },
+  "setOutputDirectory": "Set output directory",
+  "@setOutputDirectory": {
+    "description": "setOutputDirectory"
+  },
+  "processingHistory": "Processing history",
+  "@processingHistory": {
+    "description": "processingHistory"
+  },
+  "clearHistory": "Clear history",
+  "@clearHistory": {
+    "description": "clearHistory"
+  },
+  "noHistory": "No files processed yet",
+  "@noHistory": {
+    "description": "noHistory"
+  },
+  "outputHelp": "Creates .log files; ZIP results go into a separate folder",
+  "@outputHelp": {
+    "description": "outputHelp"
+  },
+  "statusQueued": "Queued",
+  "@statusQueued": {
+    "description": "statusQueued"
+  },
+  "statusRunning": "Processing",
+  "@statusRunning": {
+    "description": "statusRunning"
+  },
+  "statusSuccess": "Completed",
+  "@statusSuccess": {
+    "description": "statusSuccess"
+  },
+  "statusWarning": "Partially recovered",
+  "@statusWarning": {
+    "description": "statusWarning"
+  },
+  "statusFailure": "Failed",
+  "@statusFailure": {
+    "description": "statusFailure"
+  },
+  "copyOutputPath": "Copy output path",
+  "@copyOutputPath": {
+    "description": "copyOutputPath"
+  },
+  "outputPathCopied": "Output path copied",
+  "@outputPathCopied": {
+    "description": "outputPathCopied"
+  },
+  "inputMissing": "Input file not found. Select it again.",
+  "@inputMissing": {
+    "description": "inputMissing"
+  },
+  "zipEntryTooLarge": "A log inside the ZIP exceeds 256 MiB.",
+  "@zipEntryTooLarge": {
+    "description": "zipEntryTooLarge"
+  },
+  "zipEntryUnreadable": "Could not read a log inside the ZIP.",
+  "@zipEntryUnreadable": {
+    "description": "zipEntryUnreadable"
+  },
+  "zipChecksumFailed": "ZIP checksum failed. The log may be corrupted.",
+  "@zipChecksumFailed": {
+    "description": "zipChecksumFailed"
+  },
+  "zipNoLogs": "No .xlog, .log, or .bin files found in the ZIP.",
+  "@zipNoLogs": {
+    "description": "zipNoLogs"
+  },
+  "noLogContent": "No log content recovered. Check the format and private key.",
+  "@noLogContent": {
+    "description": "noLogContent"
+  },
+  "taskCount": "{count, plural, =1{1 task} other{{count} tasks}}",
+  "@taskCount": {
+    "description": "taskCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "generatedLogs": "{count, plural, =1{Generated 1 log} other{Generated {count} logs}}",
+  "@generatedLogs": {
+    "description": "generatedLogs",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "failedLogs": "{count, plural, =1{1 failed} other{{count} failed}}",
+  "@failedLogs": {
+    "description": "failedLogs",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "skippedEntries": "{count, plural, =1{Skipped 1 non-log entry} other{Skipped {count} non-log entries}}",
+  "@skippedEntries": {
+    "description": "skippedEntries",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logBlocks": "{count, plural, =1{1 log block} other{{count} log blocks}}",
+  "@logBlocks": {
+    "description": "logBlocks",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recoveryHints": "Recovery notes ({count})\n{details}",
+  "@recoveryHints": {
+    "description": "recoveryHints",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "languageName": "English",
+  "@languageName": {
+    "description": "Native name of this language, displayed in the language menu."
+  }
+}

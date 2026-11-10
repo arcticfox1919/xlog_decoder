@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:xlog_decode/xlog_decode.dart';
 
-import '../../../core/xlog/xlog_decoder.dart';
+import '../../../l10n/app_language.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../application/decoder_controller.dart';
 import '../data/decoder_preferences.dart';
@@ -13,12 +15,12 @@ class DecoderPage extends StatefulWidget {
   const DecoderPage({
     super.key,
     this.controller,
-    this.dialogs = const NativeFileDialogService(),
+    this.dialogs,
     this.preferences,
   });
 
   final DecoderController? controller;
-  final FileDialogService dialogs;
+  final FileDialogService? dialogs;
   final DecoderPreferencesStore? preferences;
 
   @override
@@ -55,7 +57,7 @@ class _DecoderPageState extends State<DecoderPage> {
       _privateKey.text = _lastPrivateKey;
     } catch (_) {
       if (mounted) {
-        _showError('无法读取已保存的设置，请重新选择目录或输入私钥。');
+        _showError(AppLocalizations.of(context).loadSettingsError);
       }
     } finally {
       if (mounted) setState(() => _loadingSettings = false);
@@ -64,7 +66,9 @@ class _DecoderPageState extends State<DecoderPage> {
 
   Future<void> _persist(Future<void> Function() action) {
     _pendingSave = _pendingSave.then((_) => action()).catchError((Object _) {
-      _showError('设置保存失败，本次修改未保存，请检查本机存储权限。');
+      if (mounted) {
+        _showError(AppLocalizations.of(context).saveSettingsError);
+      }
     });
     return _pendingSave;
   }
@@ -101,22 +105,32 @@ class _DecoderPageState extends State<DecoderPage> {
     try {
       await action();
     } on Exception catch (error) {
-      _showError('无法打开文件选择窗口：$error');
+      if (mounted) {
+        _showError(AppLocalizations.of(context).dialogError(error.toString()));
+      }
     } finally {
       if (mounted) setState(() => _dialogOpen = false);
     }
   }
 
+  FileDialogService get _dialogs =>
+      widget.dialogs ??
+      NativeFileDialogService(
+        logFilesLabel: AppLocalizations.of(context).logFiles,
+        allFilesLabel: AppLocalizations.of(context).allFiles,
+        directoryButtonLabel: AppLocalizations.of(context).setOutputDirectory,
+      );
+
   Future<void> _selectFiles() async {
     List<String> paths = [];
     await _dialog(() async {
-      paths = await widget.dialogs.selectLogs();
+      paths = await _dialogs.selectLogs();
     });
     if (mounted) await _decode(paths);
   }
 
   Future<void> _chooseDirectory() => _dialog(() async {
-    final directory = await widget.dialogs.selectDirectory();
+    final directory = await _dialogs.selectDirectory();
     if (directory != null && mounted) {
       _controller.setOutputDirectory(directory);
       final store = widget.preferences;
@@ -133,7 +147,7 @@ class _DecoderPageState extends State<DecoderPage> {
   }
 
   Future<void> _importKey() => _dialog(() async {
-    final key = await widget.dialogs.readPrivateKey();
+    final key = await _dialogs.readPrivateKey();
     if (key != null && mounted) _privateKey.text = key.trim();
   });
 
@@ -185,8 +199,8 @@ class _DecoderPageState extends State<DecoderPage> {
                         onClear: _controller.clear,
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        '全程本地处理  ·  保留原文件  ·  同名自动编号',
+                      Text(
+                        AppLocalizations.of(context).privacyNote,
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.faint,
@@ -216,7 +230,9 @@ class _DecoderPageState extends State<DecoderPage> {
     privateKeyController: _privateKey,
     outputDirectory: _controller.outputDirectory,
     busy: _controller.busy || _dialogOpen || _loadingSettings,
-    error: _controller.configurationError,
+    error: _controller.configurationError == null
+        ? null
+        : AppLocalizations.of(context).invalidPrivateKey,
     onSelectDirectory: _chooseDirectory,
     onResetDirectory: _resetDirectory,
     onImportKey: _importKey,
@@ -236,19 +252,15 @@ class _DecoderPageState extends State<DecoderPage> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0x16000000)),
         ),
-        child: const Icon(
-          Icons.terminal_rounded,
-          color: Colors.white,
-          size: 23,
-        ),
+        child: Icon(Icons.terminal_rounded, color: Colors.white, size: 23),
       ),
       const SizedBox(width: 12),
-      const Expanded(
+      Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Xlog 解码器',
+              AppLocalizations.of(context).appTitle,
               style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
@@ -257,12 +269,13 @@ class _DecoderPageState extends State<DecoderPage> {
             ),
             SizedBox(height: 2),
             Text(
-              'Narwal 日志解码工具',
+              AppLocalizations.of(context).appSubtitle,
               style: TextStyle(fontSize: 12, color: AppColors.muted),
             ),
           ],
         ),
       ),
+      const LanguageMenu(),
       if (!compact)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -271,13 +284,13 @@ class _DecoderPageState extends State<DecoderPage> {
             borderRadius: BorderRadius.circular(7),
             border: Border.all(color: const Color(0xffdbebe3)),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.shield_outlined, size: 13, color: AppColors.accent),
               SizedBox(width: 6),
               Text(
-                '本地处理',
+                AppLocalizations.of(context).localProcessing,
                 style: TextStyle(
                   fontSize: 11,
                   color: AppColors.accent,

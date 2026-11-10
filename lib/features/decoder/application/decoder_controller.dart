@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:xlog_decode/xlog_decode.dart';
 
-import '../../../core/xlog/xlog_decoder.dart';
 import '../data/log_file_service.dart';
+import '../domain/decode_failure.dart';
 import '../domain/decode_models.dart';
 
 class DecoderController extends ChangeNotifier {
@@ -14,12 +15,12 @@ class DecoderController extends ChangeNotifier {
   bool _disposed = false;
   int _nextId = 0;
   String? _outputDirectory;
-  String? _configurationError;
+  DecoderConfigurationError? _configurationError;
 
   List<DecodeTask> get tasks => List.unmodifiable(_tasks);
   bool get busy => _busy;
   String? get outputDirectory => _outputDirectory;
-  String? get configurationError => _configurationError;
+  DecoderConfigurationError? get configurationError => _configurationError;
   int get completedCount =>
       _tasks.where((task) => task.status == DecodeTaskStatus.success).length;
 
@@ -41,7 +42,7 @@ class DecoderController extends ChangeNotifier {
     try {
       XlogDecoder(privateKeyHex: privateKeyHex);
     } on ArgumentError {
-      _configurationError = '私钥需为有效的 64 位十六进制字符串；未加密日志可留空。';
+      _configurationError = DecoderConfigurationError.invalidPrivateKey;
       _notify();
       return;
     }
@@ -89,6 +90,7 @@ class DecoderController extends ChangeNotifier {
               id: task.id,
               inputPath: task.inputPath,
               status: DecodeTaskStatus.failure,
+              failure: error is DecodeFailure ? error : null,
               error: error is FormatException
                   ? error.message
                   : error.toString(),
